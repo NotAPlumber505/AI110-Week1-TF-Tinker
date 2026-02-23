@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional, Tuple
+import re
 
 Song = Dict[str, object]
 PlaylistMap = Dict[str, List[Song]]
@@ -60,12 +61,12 @@ def normalize_song(raw: Song) -> Song:
 def classify_song(song: Song, profile: Dict[str, object]) -> str:
     """Return a mood label given a song and user profile."""
     energy = song.get("energy", 0)
-    genre = song.get("genre", "")
-    title = song.get("title", "")
+    genre = str(song.get("genre", "")).lower()
+    title = str(song.get("title", "")).lower()
 
     hype_min_energy = profile.get("hype_min_energy", 7)
     chill_max_energy = profile.get("chill_max_energy", 3)
-    favorite_genre = profile.get("favorite_genre", "")
+    favorite_genre = str(profile.get("favorite_genre", "")).lower()
 
     hype_keywords = ["rock", "punk", "party"]
     chill_keywords = ["lofi", "ambient", "sleep"]
@@ -116,12 +117,12 @@ def compute_playlist_stats(playlists: PlaylistMap) -> Dict[str, object]:
     chill = playlists.get("Chill", [])
     mixed = playlists.get("Mixed", [])
 
-    total = len(hype)
+    total = len(all_songs) # fix: total should include all songs
     hype_ratio = len(hype) / total if total > 0 else 0.0
 
     avg_energy = 0.0
     if all_songs:
-        total_energy = sum(song.get("energy", 0) for song in hype)
+        total_energy = sum(song.get("energy", 0) for song in all_songs) # fix: average energy computed by all songs, not hype only
         avg_energy = total_energy / len(all_songs)
 
     top_artist, top_count = most_common_artist(all_songs)
@@ -153,6 +154,9 @@ def most_common_artist(songs: List[Song]) -> Tuple[str, int]:
     items = sorted(counts.items(), key=lambda item: item[1], reverse=True)
     return items[0]
 
+def _fold_search(text: str) -> str:
+    """Lowercase and remove non-alphanumerics for fuzzy matching."""
+    return re.sub(r"[^a-z0-9]+", "", text.lower())
 
 def search_songs(
     songs: List[Song],
@@ -163,12 +167,13 @@ def search_songs(
     if not query:
         return songs
 
-    q = query.lower().strip()
-    filtered: List[Song] = []
+    q_raw = query.lower().strip()
+    q_fold = _fold_search(query)
 
+    filtered: List[Song] = []
     for song in songs:
         value = str(song.get(field, "")).lower()
-        if value and value in q:
+        if q_raw in value or (q_fold and q_fold in _fold_search(value)):
             filtered.append(song)
 
     return filtered
@@ -184,7 +189,11 @@ def lucky_pick(
     elif mode == "chill":
         songs = playlists.get("Chill", [])
     else:
-        songs = playlists.get("Hype", []) + playlists.get("Chill", [])
+        songs = (
+            playlists.get("Hype", []) 
+            + playlists.get("Chill", [])
+            + playlists.get("Mixed", [])
+        )
 
     return random_choice_or_none(songs)
 
@@ -192,6 +201,9 @@ def lucky_pick(
 def random_choice_or_none(songs: List[Song]) -> Optional[Song]:
     """Return a random song or None."""
     import random
+
+    if not songs:   # fix: avoid errors on empty list
+        return None
 
     return random.choice(songs)
 

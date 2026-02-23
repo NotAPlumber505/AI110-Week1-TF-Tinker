@@ -227,14 +227,22 @@ def profile_sidebar():
 def add_song_sidebar():
     """Render the Add Song controls in the sidebar."""
     st.sidebar.header("Add a song")
+    st.sidebar.caption("Note: 'Mixed' is assigned automatically when a song is neither Hype nor Chill")
 
     title = st.sidebar.text_input("Title")
     artist = st.sidebar.text_input("Artist")
     genre = st.sidebar.selectbox(
         "Genre",
         options=["rock", "lofi", "pop", "jazz", "electronic", "ambient", "other"],
+        help="Genre can trigger Hype if it matches your favorite or contains rock/punk/party."
     )
-    energy = st.sidebar.slider("Energy", min_value=1, max_value=10, value=5)
+    energy = st.sidebar.slider(
+        "Energy (1-10)", 
+        min_value=1, 
+        max_value=10, 
+        value=5,
+        help="Energy drives Hype/Chill classification."
+    )
     tags_text = st.sidebar.text_input("Tags (comma separated)")
 
     if st.sidebar.button("Add to playlist"):
@@ -285,17 +293,17 @@ def render_playlist(label, songs):
 
     for song in filtered:
         mood = song.get("mood", "?")
-        tags = ", ".join(song.get("tags", []))
+        tags_list = song.get("tags", [])
+        tags = ", ".join(tags_list) if tags_list else "none"
         st.write(
             f"- **{song['title']}** by {song['artist']} "
-            f"(genre {song['genre']}, energy {song['energy']}, mood {mood}) "
-            f"[{tags}]"
+            f"(genre {song['genre']}, energy {song['energy']}, mood {mood}, tags: {tags})"
         )
 
 
 def lucky_section(playlists):
     """Render the lucky pick controls and result."""
-    st.header("Lucky pick")
+    st.header("Lucky pick", help="Randomly choose songs from your favorite genre!")
 
     mode = st.selectbox(
         "Pick from",
@@ -326,14 +334,14 @@ def stats_section(playlists):
     stats = compute_playlist_stats(playlists)
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Total songs", stats["total_songs"])
-    col2.metric("Hype songs", stats["hype_count"])
-    col3.metric("Chill songs", stats["chill_count"])
+    col1.metric("Total songs", stats["total_songs"], help="Unique count across Hype + Chill + Mixed.")
+    col2.metric("Hype songs", stats["hype_count"], help="Songs classified as Hype by the rules.")
+    col3.metric("Chill songs", stats["chill_count"], help="Songs classified as Chill by the rules.")
 
     col4, col5, col6 = st.columns(3)
-    col4.metric("Mixed songs", stats["mixed_count"])
-    col5.metric("Hype ratio", f"{stats['hype_ratio']:.2f}")
-    col6.metric("Average energy", f"{stats['avg_energy']:.2f}")
+    col4.metric("Mixed songs", stats["mixed_count"], help="Songs that are neither Hype nor Chill.")
+    col5.metric("Hype ratio", f"{stats['hype_ratio']:.2f}", help="Hype count ÷ total songs.")
+    col6.metric("Average energy", f"{stats['avg_energy']:.2f}", help="Mean energy across all songs.")
 
     top_artist = stats["top_artist"]
     if top_artist:
@@ -344,10 +352,9 @@ def stats_section(playlists):
     else:
         st.write("No top artist yet.")
 
-
 def history_section():
     """Render the pick history overview."""
-    st.header("History")
+    st.header("History", help="List of songs generated from lucky pick")
 
     history = st.session_state.history
     if not history:
@@ -375,12 +382,11 @@ def clear_controls():
 
 
 def main():
-    st.set_page_config(page_title="Playlist Chaos", layout="wide")
-    st.title("Playlist Chaos")
+    st.set_page_config(page_title="MuseVenture - Smart Playlist Recommendation Engine", layout="wide")
+    st.title("MuseVenture - Smart Playlist Recommendation Engine")
 
     st.write(
-        "An AI assistant tried to build a smart playlist engine. "
-        "The code runs, but the behavior is a bit unpredictable."
+        "A smart playlist engine to explore songs of your choice!~"
     )
 
     init_state()
