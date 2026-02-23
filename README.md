@@ -111,3 +111,14 @@ If you finish early or want an extra challenge, try one of these:
 - Stay curious. The unpredictability is intentional and part of the experience.
 
 When you finish, Playlist Chaos will feel more predictable, and you will have taken your first steps into AI-assisted debugging.
+
+
+## Short Summary (added by TF)
+
+The core concept that students need to understand with this activity is to develop their ability to explain technical problems effectively. When prompting the AI in this tinker, students are expected to perform investigation on the program and understand how features work, making notes of any errors, prior to prompting the AI to assist them with any questions about the application. This teaches students to use AI as a learning tool rather than a crutch in debugging and building their programs as well as explain technical concepts more effectively, which will improve their capacities as developers in the future. 
+
+Students are most likely to struggle in the investigative area of the application, as the tinker instructions are open-ended, leaving students to discover bugs and unnecessary/unclarified features in the program on their own. 
+
+I found AI most helpful when it was explaining the program in a more thorough breakdown, going down each function to explain its purpose in the application, but there are times it will provide unnecessary fixes that overcomplicate simple features. 
+
+One way I would guide a student in this activity without giving them the answer would be to tell them to investigate every aspect of the application as thoroughly as possible, testing all edge cases they can think of in any input fields and also view the application from the user's perspective when they are deciding on prompts to ask the AI assistant in debugging the program. Moreover, the more investigation students put into these features, the more elaborate they can be in their explanation during the prompts, allowing them to improve their communication skills and ability to explain technical concepts in a clarifying manner.
